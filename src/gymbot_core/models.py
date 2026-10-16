@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 DEFAULT_TIMEZONE = "America/Sao_Paulo"
 NoteCategory = Literal["sono", "alimentacao", "dor", "outro"]
@@ -27,6 +27,11 @@ class ExerciseLog(BaseModel):
     created_at: datetime
     deleted_at: datetime | None = None
 
+    @property
+    def ref(self) -> str:
+        """Referencia opaca para corrigir/apagar o registro: '<data>#<log_id>'."""
+        return f"{self.date}#{self.log_id}"
+
 
 class Note(BaseModel):
     note_id: str
@@ -42,3 +47,54 @@ class UserProfile(BaseModel):
     name: str | None = None
     timezone: str = DEFAULT_TIMEZONE
     created_at: datetime
+
+
+# ---- plano semanal (J2) ---------------------------------------------------------------------
+Weekday = Literal["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]
+WEEKDAYS: tuple[Weekday, ...] = (
+    "segunda",
+    "terca",
+    "quarta",
+    "quinta",
+    "sexta",
+    "sabado",
+    "domingo",
+)  # a posicao e o ``date.weekday()``
+
+
+class PlannedExercise(BaseModel):
+    exercise_id: str
+    exercise_raw: str
+    sets: int = Field(ge=1, le=20)
+    reps_min: int = Field(ge=1, le=100)
+    reps_max: int = Field(ge=1, le=100)
+    note: str | None = None
+
+    @model_validator(mode="after")
+    def _range_is_ordered(self) -> "PlannedExercise":
+        if self.reps_min > self.reps_max:
+            raise ValueError("reps_min nao pode ser maior que reps_max")
+        return self
+
+
+class PlanDay(BaseModel):
+    weekday: Weekday
+    label: str = ""  # ex.: "peito e triceps"
+    exercises: list[PlannedExercise] = Field(min_length=1)
+
+
+class Plan(BaseModel):
+    version: str
+    days: list[PlanDay]
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def _one_day_per_weekday_in_week_order(self) -> "Plan":
+        weekdays = [d.weekday for d in self.days]
+        if len(set(weekdays)) != len(weekdays):
+            raise ValueError("um mesmo dia da semana aparece duas vezes no plano")
+        self.days.sort(key=lambda d: WEEKDAYS.index(d.weekday))
+        return self
+
+    def day_for(self, weekday: Weekday) -> PlanDay | None:
+        return next((d for d in self.days if d.weekday == weekday), None)
