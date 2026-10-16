@@ -420,7 +420,7 @@ wheels = [
 
 [[package]]
 name = "gymbot-core"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },
@@ -431,7 +431,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "moto", extra = ["dynamodb"] },
+    { name = "moto", extra = ["dynamodb", "ssm"] },
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
@@ -447,7 +447,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "moto", extras = ["dynamodb"], specifier = ">=5.2.4" },
+    { name = "moto", extras = ["dynamodb", "secretsmanager", "ssm"], specifier = ">=5.2.4" },
     { name = "mypy", specifier = ">=2.4.0" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.17.1" },
@@ -716,6 +716,9 @@ wheels = [
 dynamodb = [
     { name = "docker" },
     { name = "py-partiql-parser" },
+]
+ssm = [
+    { name = "pyyaml" },
 ]
 
 [[package]]
