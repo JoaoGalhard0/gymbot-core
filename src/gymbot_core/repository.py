@@ -14,6 +14,7 @@ from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 from gymbot_core.models import ExerciseLog, Note, Plan, UserProfile
+from gymbot_core.schedule import ReportSchedule
 from gymbot_core.table import GSI1_NAME
 
 
@@ -38,6 +39,10 @@ class Repository(Protocol):
     def notes_between(self, user_id: int, start: str, end: str) -> list[Note]: ...
     def get_plan(self, user_id: int) -> Plan | None: ...
     def put_plan(self, user_id: int, plan: Plan) -> None: ...
+    def put_schedule(self, user_id: int, schedule: ReportSchedule) -> None: ...
+    def get_schedule(self, user_id: int, schedule_id: str) -> ReportSchedule | None: ...
+    def list_schedules(self, user_id: int) -> list[ReportSchedule]: ...
+    def delete_schedule(self, user_id: int, schedule_id: str) -> None: ...
 
 
 def _to_ddb(model_dump: dict[str, Any]) -> dict[str, Any]:
@@ -200,3 +205,28 @@ class TrainingRepository:
         body = _to_ddb(plan.model_dump(mode="json"))
         self._table.put_item(Item={"PK": _user_pk(user_id), "SK": f"PLAN#{plan.version}", **body})
         self._table.put_item(Item={"PK": _user_pk(user_id), "SK": "PLAN#CURRENT", **body})
+
+    # -- agendamentos de relatorio (A7) ---------------------------------------------------
+    def put_schedule(self, user_id: int, schedule: ReportSchedule) -> None:
+        item = {
+            "PK": _user_pk(user_id),
+            "SK": f"SCHEDULE#{schedule.schedule_id}",
+            **_to_ddb(schedule.model_dump(mode="json")),
+        }
+        self._table.put_item(Item=item)
+
+    def get_schedule(self, user_id: int, schedule_id: str) -> ReportSchedule | None:
+        item = self._table.get_item(
+            Key={"PK": _user_pk(user_id), "SK": f"SCHEDULE#{schedule_id}"}
+        ).get("Item")
+        return ReportSchedule.model_validate(item) if item else None
+
+    def list_schedules(self, user_id: int) -> list[ReportSchedule]:
+        items = self._paginate(
+            KeyConditionExpression=Key("PK").eq(_user_pk(user_id))
+            & Key("SK").begins_with("SCHEDULE#")
+        )
+        return [ReportSchedule.model_validate(item) for item in items]
+
+    def delete_schedule(self, user_id: int, schedule_id: str) -> None:
+        self._table.delete_item(Key={"PK": _user_pk(user_id), "SK": f"SCHEDULE#{schedule_id}"})

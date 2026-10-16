@@ -18,6 +18,7 @@ from gymbot_core.models import (
     UserProfile,
 )
 from gymbot_core.repository import Repository, TrainingRepository
+from gymbot_core.schedule import Recurrence, ReportSchedule
 from gymbot_core.table import table_definition
 
 NOW = datetime(2026, 10, 16, 21, 0, tzinfo=UTC)
@@ -217,3 +218,59 @@ def test_put_plan_is_idempotent(repo: Repository) -> None:
 def test_plans_are_per_user(repo: Repository) -> None:
     repo.put_plan(1, _plan("v1"))
     assert repo.get_plan(2) is None
+
+
+# ---- agendamentos -------------------------------------------------------------------------
+def _schedule(schedule_id: str = "s1", **kw: object) -> ReportSchedule:
+    base: dict[str, object] = {
+        "schedule_id": schedule_id,
+        "report_type": "weekly_summary",
+        "recurrence": Recurrence(weekdays=["segunda"], hour=7),
+        "timezone": "America/Sao_Paulo",
+        "created_at": NOW,
+    }
+    return ReportSchedule.model_validate({**base, **kw})
+
+
+def test_schedule_round_trips_and_is_listed_in_id_order(repo: Repository) -> None:
+    repo.put_schedule(1, _schedule("b", status="active"))
+    repo.put_schedule(
+        1,
+        _schedule(
+            "a",
+            report_type="exercise_focus",
+            exercise_ids=[BENCH],
+            recurrence=Recurrence(weekdays=["terca", "quinta"], hour=18, minute=30),
+        ),
+    )
+    listed = repo.list_schedules(1)
+    assert [s.schedule_id for s in listed] == ["a", "b"]
+    assert listed[0].recurrence.weekdays == ["terca", "quinta"]
+    assert (listed[0].recurrence.hour, listed[0].recurrence.minute) == (18, 30)
+    assert listed[0].exercise_ids == [BENCH]
+    assert listed[1].status == "active"
+
+
+def test_get_and_delete_schedule_are_scoped_to_the_user(repo: Repository) -> None:
+    repo.put_schedule(1, _schedule("s1"))
+    assert repo.get_schedule(1, "s1") is not None
+    assert repo.get_schedule(2, "s1") is None
+    repo.delete_schedule(2, "s1")  # outro usuario: nao apaga
+    assert repo.get_schedule(1, "s1") is not None
+    repo.delete_schedule(1, "s1")
+    repo.delete_schedule(1, "s1")  # idempotente
+    assert repo.get_schedule(1, "s1") is None
+
+
+def test_put_schedule_overwrites_for_status_changes(repo: Repository) -> None:
+    repo.put_schedule(1, _schedule("s1", status="pending"))
+    repo.put_schedule(1, _schedule("s1", status="active"))
+    schedules = repo.list_schedules(1)
+    assert len(schedules) == 1 and schedules[0].status == "active"
+
+
+def test_schedules_do_not_leak_into_other_queries(repo: Repository) -> None:
+    repo.put_schedule(1, _schedule("s1"))
+    repo.put_log(1, _log("a", "2026-10-16", 30.0))
+    assert [log.log_id for log in repo.recent_logs(1, 10)] == ["a"]
+    assert [s.schedule_id for s in repo.list_schedules(1)] == ["s1"]

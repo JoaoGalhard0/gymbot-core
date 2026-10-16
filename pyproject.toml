@@ -1,6 +1,6 @@
 [project]
 name = "gymbot-core"
-version = "0.4.0"
+version = "0.5.0"
 description = "GymBot: dominio, repositorio DynamoDB e calculos de treino"
 readme = "README.md"
 authors = [
@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.14.1",
     "python-ulid>=4.0.1",
     "pyyaml>=6.0.3",
+    "tzdata>=2026.5",
 ]
 
 [build-system]

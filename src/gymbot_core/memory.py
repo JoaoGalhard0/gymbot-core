@@ -5,6 +5,7 @@ inteira) e a testes rapidos. Ordenacao e filtros imitam as chaves do DynamoDB.
 """
 
 from gymbot_core.models import ExerciseLog, Note, Plan, UserProfile
+from gymbot_core.schedule import ReportSchedule
 
 
 class InMemoryRepository:
@@ -15,6 +16,7 @@ class InMemoryRepository:
         self._plans: dict[int, Plan] = {}
         self._plan_versions: dict[tuple[int, str], Plan] = {}
         self.sessions: set[tuple[int, str]] = set()
+        self._schedules: dict[tuple[int, str], ReportSchedule] = {}
 
     def get_profile(self, user_id: int) -> UserProfile | None:
         return self._profiles.get(user_id)
@@ -79,3 +81,17 @@ class InMemoryRepository:
     def put_plan(self, user_id: int, plan: Plan) -> None:
         self._plan_versions[(user_id, plan.version)] = plan.model_copy(deep=True)
         self._plans[user_id] = plan.model_copy(deep=True)
+
+    def put_schedule(self, user_id: int, schedule: ReportSchedule) -> None:
+        self._schedules[(user_id, schedule.schedule_id)] = schedule.model_copy(deep=True)
+
+    def get_schedule(self, user_id: int, schedule_id: str) -> ReportSchedule | None:
+        found = self._schedules.get((user_id, schedule_id))
+        return found.model_copy(deep=True) if found else None
+
+    def list_schedules(self, user_id: int) -> list[ReportSchedule]:
+        mine = sorted((sid, s) for (uid, sid), s in self._schedules.items() if uid == user_id)
+        return [s.model_copy(deep=True) for _, s in mine]
+
+    def delete_schedule(self, user_id: int, schedule_id: str) -> None:
+        self._schedules.pop((user_id, schedule_id), None)
