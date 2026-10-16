@@ -1,0 +1,103 @@
+# Catalogo de exercicios (specs/dados.md). `name` e o nome canonico exibido; `aliases` sao
+# variacoes que usuarios escrevem. Comparacao ignora acentos, caixa e pontuacao.
+# Exercicio fora daqui vira `custom:<slug>` e fica marcado para revisao.
+
+# ---- peito
+- {id: bench_press_barbell, name: supino reto, muscle_group: peito, equipment: barra,
+   aliases: [supino, supino reto barra, supino com barra, bench press, supino reto com barra]}
+- {id: incline_bench_press_barbell, name: supino inclinado, muscle_group: peito, equipment: barra,
+   aliases: [supino inclinado barra, supino inclinado com barra, incline bench press]}
+- {id: bench_press_dumbbell, name: supino reto com halteres, muscle_group: peito, equipment: halter,
+   aliases: [supino halter, supino reto halter, supino com halteres]}
+- {id: incline_bench_press_dumbbell, name: supino inclinado com halteres, muscle_group: peito, equipment: halter,
+   aliases: [supino inclinado halter, supino inclinado halteres]}
+- {id: dumbbell_fly, name: crucifixo, muscle_group: peito, equipment: halter,
+   aliases: [crucifixo reto, crucifixo com halteres, crucifixo halter]}
+- {id: incline_dumbbell_fly, name: crucifixo inclinado, muscle_group: peito, equipment: halter,
+   aliases: [crucifixo inclinado com halteres]}
+- {id: cable_crossover, name: crossover, muscle_group: peito, equipment: cabo,
+   aliases: [cross over, crucifixo na polia, crucifixo cabo, polia cruzada]}
+- {id: pec_deck, name: voador, muscle_group: peito, equipment: maquina,
+   aliases: [peck deck, pec deck, crucifixo maquina, crucifixo na maquina]}
+- {id: push_up, name: flexao de braco, muscle_group: peito, equipment: peso corporal,
+   aliases: [flexao, flexoes, push up]}
+# ---- costas
+- {id: lat_pulldown, name: puxada frontal, muscle_group: costas, equipment: cabo,
+   aliases: [puxada, puxada na frente, pulldown, puxador frontal, puxada alta]}
+- {id: close_grip_pulldown, name: puxada triangulo, muscle_group: costas, equipment: cabo,
+   aliases: [puxada neutra, puxada com triangulo, puxada fechada]}
+- {id: barbell_row, name: remada curvada, muscle_group: costas, equipment: barra,
+   aliases: [remada com barra, remada curvada barra, bent over row]}
+- {id: seated_cable_row, name: remada baixa, muscle_group: costas, equipment: cabo,
+   aliases: [remada sentada, remada no cabo, remada triangulo, remada baixa no cabo]}
+- {id: dumbbell_row, name: remada unilateral, muscle_group: costas, equipment: halter,
+   aliases: [serrote, remada serrote, remada com halter, remada unilateral com halter]}
+- {id: machine_row, name: remada maquina, muscle_group: costas, equipment: maquina,
+   aliases: [remada na maquina, remada articulada]}
+- {id: pull_up, name: barra fixa, muscle_group: costas, equipment: peso corporal,
+   aliases: [pull up, pullup, barra]}
+- {id: deadlift, name: levantamento terra, muscle_group: costas, equipment: barra,
+   aliases: [terra, deadlift]}
+- {id: pullover, name: pullover, muscle_group: costas, equipment: halter,
+   aliases: [pull over, pulover]}
+# ---- ombros
+- {id: overhead_press_barbell, name: desenvolvimento com barra, muscle_group: ombros, equipment: barra,
+   aliases: [desenvolvimento barra, military press]}
+- {id: overhead_press_dumbbell, name: desenvolvimento com halteres, muscle_group: ombros, equipment: halter,
+   aliases: [desenvolvimento, desenvolvimento halter, desenvolvimento de ombro]}
+- {id: lateral_raise, name: elevacao lateral, muscle_group: ombros, equipment: halter,
+   aliases: [lateral, elevacao lateral com halteres, lateral raise]}
+- {id: front_raise, name: elevacao frontal, muscle_group: ombros, equipment: halter,
+   aliases: [frontal, elevacao frontal com halteres]}
+- {id: rear_delt_fly, name: crucifixo inverso, muscle_group: ombros, equipment: halter,
+   aliases: [posterior de ombro, voador inverso, crucifixo invertido, reverse fly]}
+- {id: shrug, name: encolhimento, muscle_group: ombros, equipment: halter,
+   aliases: [encolhimento de ombros, trapezio, shrug]}
+# ---- biceps
+- {id: barbell_curl, name: rosca direta, muscle_group: biceps, equipment: barra,
+   aliases: [rosca, rosca direta barra, rosca com barra, rosca w]}
+- {id: dumbbell_curl, name: rosca alternada, muscle_group: biceps, equipment: halter,
+   aliases: [rosca halter, rosca com halteres, rosca simultanea]}
+- {id: hammer_curl, name: rosca martelo, muscle_group: biceps, equipment: halter,
+   aliases: [martelo, hammer curl]}
+- {id: preacher_curl, name: rosca scott, muscle_group: biceps, equipment: barra,
+   aliases: [scott, rosca no banco scott, preacher curl]}
+# ---- triceps
+- {id: triceps_pushdown, name: triceps pulley, muscle_group: triceps, equipment: cabo,
+   aliases: [triceps na polia, triceps corda, pulley, triceps pushdown, pulley corda, triceps no cabo]}
+- {id: skull_crusher, name: triceps testa, muscle_group: triceps, equipment: barra,
+   aliases: [testa, triceps na testa, skull crusher]}
+- {id: overhead_triceps_extension, name: triceps frances, muscle_group: triceps, equipment: halter,
+   aliases: [frances, triceps frances com halter]}
+- {id: dips, name: mergulho, muscle_group: triceps, equipment: peso corporal,
+   aliases: [paralelas, mergulho nas paralelas, dips, triceps paralelas]}
+# ---- pernas
+- {id: squat_barbell, name: agachamento livre, muscle_group: pernas, equipment: barra,
+   aliases: [agachamento, agacho, squat, agachamento com barra]}
+- {id: hack_squat, name: agachamento hack, muscle_group: pernas, equipment: maquina,
+   aliases: [hack, hack squat]}
+- {id: leg_press, name: leg press 45, muscle_group: pernas, equipment: maquina,
+   aliases: [leg press, leg, legpress, leg 45]}
+- {id: leg_extension, name: cadeira extensora, muscle_group: pernas, equipment: maquina,
+   aliases: [extensora, cadeira extensora maquina]}
+- {id: leg_curl, name: mesa flexora, muscle_group: pernas, equipment: maquina,
+   aliases: [flexora, cadeira flexora, flexora deitada, flexora sentada]}
+- {id: romanian_deadlift, name: stiff, muscle_group: pernas, equipment: barra,
+   aliases: [levantamento terra romeno, stiff com barra, rdl, stiff com halteres]}
+- {id: lunge, name: afundo, muscle_group: pernas, equipment: halter,
+   aliases: [avanco, passada, lunge, afundo com halteres]}
+- {id: bulgarian_split_squat, name: agachamento bulgaro, muscle_group: pernas, equipment: halter,
+   aliases: [bulgaro, split squat]}
+- {id: hip_thrust, name: elevacao pelvica, muscle_group: gluteos, equipment: barra,
+   aliases: [hip thrust, ponte com barra, pelvica]}
+- {id: hip_abduction, name: cadeira abdutora, muscle_group: gluteos, equipment: maquina,
+   aliases: [abdutora, abducao de quadril]}
+- {id: standing_calf_raise, name: panturrilha em pe, muscle_group: panturrilha, equipment: maquina,
+   aliases: [panturrilha, gemeos, gemeos em pe, calf raise]}
+- {id: seated_calf_raise, name: panturrilha sentado, muscle_group: panturrilha, equipment: maquina,
+   aliases: [panturrilha sentada, gemeos sentado]}
+# ---- abdomen
+- {id: crunch, name: abdominal, muscle_group: abdomen, equipment: peso corporal,
+   aliases: [abdominal crunch, abdominais, abdominal supra, crunch]}
+- {id: plank, name: prancha, muscle_group: abdomen, equipment: peso corporal,
+   aliases: [plank, prancha isometrica]}
