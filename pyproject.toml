@@ -1,6 +1,6 @@
 [project]
 name = "gymbot-core"
-version = "0.6.0"
+version = "0.7.0"
 description = "GymBot: dominio, repositorio DynamoDB e calculos de treino"
 readme = "README.md"
 authors = [

@@ -4,7 +4,7 @@ Serve aos evals (que chamam o Bedrock de verdade e nao podem usar moto, que inte
 inteira) e a testes rapidos. Ordenacao e filtros imitam as chaves do DynamoDB.
 """
 
-from gymbot_core.models import ExerciseLog, Note, Plan, UserProfile
+from gymbot_core.models import ExerciseLog, Note, Plan, Proposal, UserProfile
 from gymbot_core.schedule import ReportSchedule
 
 
@@ -17,6 +17,7 @@ class InMemoryRepository:
         self._plan_versions: dict[tuple[int, str], Plan] = {}
         self.sessions: set[tuple[int, str]] = set()
         self._schedules: dict[tuple[int, str], ReportSchedule] = {}
+        self._proposals: dict[tuple[int, str], Proposal] = {}
 
     def get_profile(self, user_id: int) -> UserProfile | None:
         return self._profiles.get(user_id)
@@ -95,3 +96,10 @@ class InMemoryRepository:
 
     def delete_schedule(self, user_id: int, schedule_id: str) -> None:
         self._schedules.pop((user_id, schedule_id), None)
+
+    def put_proposal(self, user_id: int, proposal: Proposal) -> None:
+        self._proposals[(user_id, proposal.proposal_id)] = proposal.model_copy(deep=True)
+
+    def get_proposal(self, user_id: int, proposal_id: str) -> Proposal | None:
+        found = self._proposals.get((user_id, proposal_id))
+        return found.model_copy(deep=True) if found else None

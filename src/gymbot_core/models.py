@@ -1,6 +1,6 @@
 """Modelos de dominio. Datas de treino ('YYYY-MM-DD') sao no fuso do usuario; timestamps em UTC."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -39,6 +39,24 @@ class Note(BaseModel):
     category: NoteCategory = "outro"
     text: str = Field(min_length=1, max_length=1000)
     created_at: datetime
+
+
+PROPOSAL_TTL = timedelta(hours=1)
+
+
+class Proposal(BaseModel):
+    """Pre-visualizacao de uma acao sensivel, guardada no servidor (ADR 009).
+
+    Confirmar exige o ``proposal_id`` devolvido na pre-visualizacao, feita em uma mensagem
+    ANTERIOR do usuario (``update_id`` menor), com exatamente os mesmos dados (``fingerprint``).
+    """
+
+    proposal_id: str
+    action: str
+    fingerprint: str
+    update_id: int  # mensagem do usuario em que a pre-visualizacao foi feita
+    created_at: datetime
+    consumed_by: int | None = None  # update_id que a confirmou (retry da mesma mensagem e ok)
 
 
 class UserProfile(BaseModel):

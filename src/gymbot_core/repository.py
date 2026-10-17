@@ -13,7 +13,7 @@ from typing import Any, Protocol
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
-from gymbot_core.models import ExerciseLog, Note, Plan, UserProfile
+from gymbot_core.models import PROPOSAL_TTL, ExerciseLog, Note, Plan, Proposal, UserProfile
 from gymbot_core.schedule import ReportSchedule
 from gymbot_core.table import GSI1_NAME
 
@@ -43,6 +43,8 @@ class Repository(Protocol):
     def get_schedule(self, user_id: int, schedule_id: str) -> ReportSchedule | None: ...
     def list_schedules(self, user_id: int) -> list[ReportSchedule]: ...
     def delete_schedule(self, user_id: int, schedule_id: str) -> None: ...
+    def put_proposal(self, user_id: int, proposal: Proposal) -> None: ...
+    def get_proposal(self, user_id: int, proposal_id: str) -> Proposal | None: ...
 
 
 def _to_ddb(model_dump: dict[str, Any]) -> dict[str, Any]:
@@ -230,3 +232,20 @@ class TrainingRepository:
 
     def delete_schedule(self, user_id: int, schedule_id: str) -> None:
         self._table.delete_item(Key={"PK": _user_pk(user_id), "SK": f"SCHEDULE#{schedule_id}"})
+
+    # -- propostas de confirmacao (ADR 009) -----------------------------------------------
+    def put_proposal(self, user_id: int, proposal: Proposal) -> None:
+        """Grava com TTL: o DynamoDB apaga as propostas vencidas sozinho."""
+        item = {
+            "PK": _user_pk(user_id),
+            "SK": f"PROPOSAL#{proposal.proposal_id}",
+            "ttl": int((proposal.created_at + PROPOSAL_TTL).timestamp()),
+            **_to_ddb(proposal.model_dump(mode="json")),
+        }
+        self._table.put_item(Item=item)
+
+    def get_proposal(self, user_id: int, proposal_id: str) -> Proposal | None:
+        item = self._table.get_item(
+            Key={"PK": _user_pk(user_id), "SK": f"PROPOSAL#{proposal_id}"}
+        ).get("Item")
+        return Proposal.model_validate(item) if item else None

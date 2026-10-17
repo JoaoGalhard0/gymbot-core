@@ -1,6 +1,7 @@
 """Modelos do update do Telegram e cliente minimo da Bot API (so stdlib + pydantic)."""
 
 import json
+import urllib.error
 import urllib.request
 from collections.abc import Callable
 from typing import Any
@@ -52,13 +53,34 @@ def _urllib_post(url: str, payload: dict[str, Any]) -> dict[str, Any]:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=10) as response:
-        result: dict[str, Any] = json.loads(response.read())
-    return result
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            result: dict[str, Any] = json.loads(response.read())
+        return result
+    except urllib.error.HTTPError as error:
+        # Erros 4xx/5xx do Telegram trazem JSON com a descricao ({"ok": false, ...}), mas o
+        # urlopen levanta antes de lermos o corpo. Devolvemos esse JSON para `_call` explicar.
+        try:
+            body = json.loads(error.read())
+        except ValueError:
+            body = {}
+        if not isinstance(body, dict):
+            body = {}
+        body.setdefault("description", str(error.reason))
+        return {**body, "ok": False, "error_code": error.code}
 
 
 class TelegramError(RuntimeError):
-    pass
+    """Resposta de erro da Bot API. A mensagem nunca contem a URL (que leva o token)."""
+
+    def __init__(self, message: str, error_code: int | None = None) -> None:
+        super().__init__(message)
+        self.error_code = error_code
+
+    @property
+    def transient(self) -> bool:
+        """429 (rate limit) e 5xx valem uma nova tentativa; o resto (400, 401, 403) nao."""
+        return self.error_code == 429 or (self.error_code or 0) >= 500
 
 
 class TelegramClient:
@@ -70,7 +92,10 @@ class TelegramClient:
         result = self._post(f"{API_BASE}/bot{self._token}/{method}", payload)
         if not result.get("ok"):
             # Nunca inclui a URL (contem o token) na mensagem de erro.
-            raise TelegramError(f"{method} falhou: {result.get('description', 'sem descricao')}")
+            raise TelegramError(
+                f"{method} falhou: {result.get('description', 'sem descricao')}",
+                error_code=result.get("error_code"),
+            )
         return result
 
     def send_message(self, chat_id: int, text: str) -> None:
